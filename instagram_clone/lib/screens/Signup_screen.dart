@@ -1,20 +1,26 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone/resources/auth_methods.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/utils.dart';
 import 'package:instagram_clone/widgets/text_fields.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  Uint8List? _image;
   bool _isLoading = false;
 
   @override
@@ -23,15 +29,28 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _bioController.dispose();
+    _usernameController.dispose();
   }
 
-  void signInUser() async {
+  // to select image, we need to use image picker package and for iso, we need to add some permisions for andriod it is okhay!.
+  void selectImage() async {
+    Uint8List im = await pickImage(ImageSource.gallery);
+    setState(() {
+      _image = im;
+    });
+  }
+
+  void signUpUser() async {
     setState(() {
       _isLoading = true;
     });
-    String res = await AuthMethds().signIpUser(
+    String res = await AuthMethds().signUpUser(
       email: _emailController.text,
       password: _passwordController.text,
+      username: _usernameController.text,
+      bio: _bioController.text,
+      file: _image!,
       context: context,
     );
 
@@ -54,8 +73,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  height: 200,
+                const SizedBox(
+                  height: 120,
                 ),
                 // svg Image.
                 SvgPicture.asset(
@@ -64,7 +83,43 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 64,
                 ),
                 const SizedBox(
-                  height: 64,
+                  height: 40,
+                ),
+                // Circular avatar to select image.
+
+                Stack(
+                  children: [
+                    _image != null
+                        ? CircleAvatar(
+                            radius: 64,
+                            backgroundImage: MemoryImage(_image!),
+                          )
+                        : const CircleAvatar(
+                            radius: 64,
+                            backgroundImage: NetworkImage(
+                                "https://th.bing.com/th/id/OIP.Z5BlhFYs_ga1fZnBWkcKjQHaHz?pid=ImgDet&rs=1"),
+                          ),
+                    Positioned(
+                      bottom: -10,
+                      left: 80,
+                      child: IconButton(
+                        onPressed: selectImage,
+                        icon: const Icon(Icons.add_a_photo),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 24,
+                ),
+                TextFieldInput(
+                  hint: 'Enter Your Username',
+                  inputType: TextInputType.text,
+                  controller: _usernameController,
+                ),
+
+                const SizedBox(
+                  height: 24,
                 ),
 
                 // Text field for email.
@@ -88,9 +143,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(
                   height: 24,
                 ),
+                TextFieldInput(
+                  hint: 'Enter Your Bio',
+                  inputType: TextInputType.text,
+                  controller: _bioController,
+                ),
+
+                const SizedBox(
+                  height: 24,
+                ),
+
                 // Button
                 InkWell(
-                  onTap: signInUser,
+                  onTap: signUpUser,
                   child: Container(
                     width: double.infinity,
                     alignment: Alignment.center,
@@ -104,12 +169,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: blueColor,
                     ),
                     child: _isLoading
-                        ? Center(
+                        ? const Center(
                             child: CircularProgressIndicator(
                               color: primaryColor,
                             ),
                           )
-                        : const Text("Log in"),
+                        : const Text("Sign Up"),
                   ),
                 ),
                 const SizedBox(
@@ -123,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.symmetric(
                         vertical: 8,
                       ),
-                      child: const Text("Dont Have an account?"),
+                      child: const Text("Already Have an Account?"),
                     ),
                     GestureDetector(
                       onTap: () {},
@@ -132,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           vertical: 8,
                         ),
                         child: const Text(
-                          "Sign up.",
+                          "  Log In.",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
