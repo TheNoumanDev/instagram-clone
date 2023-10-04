@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone/resources/auth_methods.dart';
+import 'package:instagram_clone/screens/login_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/utils.dart';
 import 'package:instagram_clone/widgets/text_fields.dart';
@@ -12,10 +13,10 @@ class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
@@ -60,6 +61,11 @@ class _LoginScreenState extends State<SignUpScreen> {
     if (res != 'success') {
       showSnackBar(context, res);
     }
+  }
+
+  void NavigateToSignIp() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const LoginScreen()));
   }
 
   @override
@@ -191,7 +197,7 @@ class _LoginScreenState extends State<SignUpScreen> {
                       child: const Text("Already Have an Account?"),
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: NavigateToSignIp,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           vertical: 8,
