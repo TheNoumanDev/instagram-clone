@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/resources/storage_methods.dart';
 import 'package:instagram_clone/utils/utils.dart';
 
@@ -11,6 +12,16 @@ class AuthMethds {
   // Firebase Variables.
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // FUnction to get the detail sof current user in the form of User Model
+  Future<model.User> getUserDetails() async {
+    User currentUser = _auth.currentUser!;
+
+    DocumentSnapshot snap =
+        await _firestore.collection('users').doc(currentUser.uid).get();
+
+    return model.User.fromSnap(snap);
+  }
 
   // We need to signup user, will take necessary parameters from user.
   Future<String> signUpUser({
@@ -39,15 +50,20 @@ class AuthMethds {
             .uploadImageToStorage('ProfilePictures', file, false);
 
         // Add user details to database!
-        await _firestore.collection('users').doc(cre.user!.uid).set({
-          'username': username,
-          'uid': cre.user!.uid,
-          'email': email,
-          'bio': bio,
-          'followers': [],
-          'following': [],
-          'photourl': photoURL,
-        });
+
+        model.User user = model.User(
+          email: email,
+          uid: cre.user!.uid,
+          photoUrl: photoURL,
+          username: username,
+          bio: bio,
+          followers: [],
+          following: [],
+        );
+        await _firestore
+            .collection('users')
+            .doc(cre.user!.uid)
+            .set(user.toJson());
 
         res = 'success';
       }
