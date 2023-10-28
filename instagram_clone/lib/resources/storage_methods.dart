@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
 
 class StorageMethods {
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -13,6 +14,11 @@ class StorageMethods {
     // Below Line will create a referance to the folder where we want to upload the file using the current user UID.
     Reference ref =
         _storage.ref().child(childName).child(_auth.currentUser!.uid);
+
+    if (isPost) {
+      String id = Uuid().v1();
+      ref = ref.child(id);
+    }
 
     // putData is used to put Uint8List file and will return a Uploadtask FIle.
     UploadTask uploadTask = ref.putData(file);
