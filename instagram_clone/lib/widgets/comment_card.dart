@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CommentCard extends StatefulWidget {
-  const CommentCard({super.key});
+  final snap;
+  const CommentCard({super.key, required this.snap});
 
   @override
   State<CommentCard> createState() => _CommentCardState();
@@ -18,8 +20,7 @@ class _CommentCardState extends State<CommentCard> {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundImage: NetworkImage(
-                "https://images.unsplash.com/photo-1682687220945-922198770e60?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
+            backgroundImage: NetworkImage(widget.snap['profilePic']),
             radius: 18,
           ),
           Expanded(
@@ -35,7 +36,7 @@ class _CommentCardState extends State<CommentCard> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: 'Username',
+                          text: widget.snap['name'],
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
@@ -44,7 +45,7 @@ class _CommentCardState extends State<CommentCard> {
                           text: '  ',
                         ),
                         TextSpan(
-                          text: 'cooment text',
+                          text: widget.snap['text'],
                         ),
                       ],
                     ),
@@ -52,7 +53,8 @@ class _CommentCardState extends State<CommentCard> {
                   Padding(
                     padding: EdgeInsets.only(top: 4),
                     child: Text(
-                      "23/12/2022",
+                      DateFormat.yMMMd()
+                          .format(widget.snap['datePublished'].toDate()),
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
                       ),

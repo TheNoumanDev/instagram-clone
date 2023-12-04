@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/models/user.dart';
 import 'package:instagram_clone/provider/user_provider.dart';
@@ -21,6 +22,27 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool isLikeAnimating = false;
+  int lent = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCOmments();
+  }
+
+  void getCOmments() async {
+    QuerySnapshot snap = await FirebaseFirestore.instance
+        .collection("posts")
+        .doc(widget.snap["postID"])
+        .collection("comments")
+        .get();
+    int len = snap.docs.length;
+    setState(() {
+      lent = len;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     User user = Provider.of<UserProvider>(context).getUser;
@@ -67,11 +89,14 @@ class _PostCardState extends State<PostCard> {
                               shrinkWrap: true,
                               children: [
                                 'Delete',
-                                'Edit',
                               ]
                                   .map(
                                     (e) => InkWell(
-                                      onTap: () {},
+                                      onTap: () async {
+                                        FirestoreMethods()
+                                            .deletePost(widget.snap['postID']);
+                                        Navigator.of(context).pop();
+                                      },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 12, horizontal: 16),
@@ -163,8 +188,7 @@ class _PostCardState extends State<PostCard> {
               IconButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) =>
-                        CommentScreen(snap: widget.snap['postId'].toString()),
+                    builder: (context) => CommentScreen(snap: widget.snap),
                   ),
                 ),
                 icon: const Icon(
@@ -232,9 +256,9 @@ class _PostCardState extends State<PostCard> {
                       onTap: () {},
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: const Text(
-                          "View all 200 comments",
-                          style: TextStyle(
+                        child: Text(
+                          "View all $lent comments",
+                          style: const TextStyle(
                             color: secondaryColor,
                             fontSize: 16,
                           ),

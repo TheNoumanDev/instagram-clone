@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/models/user.dart';
 import 'package:instagram_clone/provider/user_provider.dart';
@@ -15,6 +16,15 @@ class CommentScreen extends StatefulWidget {
 }
 
 class _CommentScreenState extends State<CommentScreen> {
+  final TextEditingController _comtController = TextEditingController();
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _comtController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     User user = Provider.of<UserProvider>(context).getUser;
@@ -24,7 +34,30 @@ class _CommentScreenState extends State<CommentScreen> {
         title: const Text("Comments section"),
         centerTitle: false,
       ),
-      body: CommentCard(),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection("posts")
+            .doc(widget.snap["postID"])
+            .collection("comments")
+            .orderBy(
+              "datePublished",
+              descending: true,
+            )
+            .snapshots(),
+        builder: ((context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return ListView.builder(
+            itemCount: (snapshot.data! as dynamic).docs.length,
+            itemBuilder: (context, index) => CommentCard(
+              snap: snapshot.data!.docs[index].data(),
+            ),
+          );
+        }),
+      ),
       bottomNavigationBar: SafeArea(
         child: Container(
           height: kToolbarHeight,
@@ -42,6 +75,7 @@ class _CommentScreenState extends State<CommentScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(left: 16.0, right: 8),
                   child: TextField(
+                    controller: _comtController,
                     decoration: InputDecoration(
                       hintText: "Comment as ${user.username}",
                       border: InputBorder.none,
@@ -52,12 +86,15 @@ class _CommentScreenState extends State<CommentScreen> {
               InkWell(
                 onTap: () async {
                   await FirestoreMethods().postComment(
-                    widget.snap['postId'],
-                    widget.snap['text'],
+                    widget.snap['postID'],
+                    _comtController.text,
                     user.uid,
                     user.username,
                     user.photoUrl,
                   );
+                  setState(() {
+                    _comtController.text = "";
+                  });
                 },
                 child: Container(
                   padding:
